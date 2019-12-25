@@ -3,14 +3,11 @@
 const express = require("express");
 const path = require("path");
 const router = require("./module/router");
-// const routers = require("./module/routers");
 
 const bodyParser = require("body-parser");
 const cors = require("cors");
 let app = express();
-const {
-  AddFriendState
-} = require('./module/db/home')
+
 //挂载参数处理中间件
 app.use(cors());
 //处理json格式的参数
@@ -25,10 +22,7 @@ app.use(
 app.use(express.static(path.resolve("./public")));
 // 将路由引入
 app.use(router);
-// user
-// app.use('/user',routers);
 
-let objRoomNumber = {}
 let arrText = {}
 var http = require('http').Server(app);
 
@@ -55,13 +49,11 @@ io.on('connection', function (socket) {
   });
   // 同意后请求数据
   socket.on('Agree', function (msg) {
-    // console.log(msg);
     io.emit(`${msg.username}Agree`, msg);
     io.emit(`${msg.userId}Agree`, msg);
   });
-  // 私聊
+  // 私聊/群聊
   socket.on('sendMsg', function (msg) {
-    // console.log(msg);
     if (!arrText[msg.roomNumber]) {
       arrText[msg.roomNumber] = []
     }

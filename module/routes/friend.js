@@ -135,21 +135,27 @@ exports.AddFriend = (req, res) => {
 
 // 获取好友分类
 exports.friendslist = (req, res) => {
+    
     friendslist(req.body, (data) => {
+       
         // 存储一份
         let datas = JSON.parse(JSON.stringify(data[0]))
-        let idx = datas.data.filter(item => item.FriendsList.length !== 0).length - 1
+        let idx = datas.data.filter(item => item.FriendsList.length !== 0).length
         let ids = datas.data.filter(item => item.FriendsList.length == 0).length
         let arrList = []
+        let idsss=0
+        // console.log(idx,ids,idsss);
+        // return 
         datas.data.map((item, index) => {
             if (item.FriendsList.length == 0) {
                 arrList[index] = datas.data[index]
                 if (datas.data.length == ids) {
-                    res.json({
+                 return   res.json({
                         code: 20000,
                         data: arrList
                     })
                 }
+                
             }
             //  通过账号获取每一个学生的详细信息
             item.FriendsList.map(async (items, indexa) => {
@@ -165,13 +171,12 @@ exports.friendslist = (req, res) => {
                     ...ime,
                     ...dat
                 }
+                
                 if (item.FriendsList.length - 1 == indexa) {
+                    idsss++
                     arrList[index] = datas.data[index]
-                    if (index == idx) {
+                    if (idsss == idx) {
                         setTimeout(() => {
-                            console.log(arrList);
-                            // let ssss = arrList.map(item => item)
-                            // console.log(ssss);
                             res.json({
                                 code: 20000,
                                 data: arrList
@@ -188,17 +193,17 @@ exports.friendslist = (req, res) => {
 // 获取添加列表
 exports.newFriendlist = (req, res) => {
     friendslist(req.body, (data) => {
-
         // 存储一份
         let datas = JSON.parse(JSON.stringify(data[0]))
         // console.log(datas);
-        let idx = datas.prestorage.filter(item => item.FriendsList.length !== 0).length - 1
+        let idx = datas.prestorage.filter(item => item.FriendsList.length !== 0).length
         let ids = datas.prestorage.filter(item => item.FriendsList.length == 0).length
         let arrList = []
+        let idsss=0
         datas.prestorage.map((item, index) => {
             if (item.FriendsList.length == 0) {
-                arrList[index] = datas.prestorage[index]
-                if (datas.prestorage.length == ids) {
+                arrList[index] = datas.data[index]
+                if (datas.data.length == ids) {
                     res.json({
                         code: 20000,
                         data: arrList
@@ -207,9 +212,11 @@ exports.newFriendlist = (req, res) => {
             }
             //  通过账号获取每一个学生的详细信息
             item.FriendsList.map(async (items, indexa) => {
+                // console.log(items);
                 let aa = await getFindes({
                     username: items.username
                 })
+                
                 let ime = JSON.parse(JSON.stringify(items))
                 // 把详细信息里面的密码删除
                 delete ime.password
@@ -219,14 +226,23 @@ exports.newFriendlist = (req, res) => {
                     ...ime,
                     ...dat
                 }
+                
                 if (item.FriendsList.length - 1 == indexa) {
+                    idsss++
                     arrList[index] = datas.prestorage[index]
-                    if (index == idx) {
-                        let aa = arrList.map(itemss => itemss.FriendsList[0])
-                        res.json({
-                            code: 20000,
-                            data: aa
-                        })
+
+                    if (idsss == idx) {
+                        setTimeout(() => {
+                            let arrl =[]
+                            arrList.map(itemaa => itemaa.FriendsList.map(itemas=>{
+                                arrl=[itemas,...arrl]
+                            })) 
+
+                            res.json({
+                                code: 20000,
+                                data: arrl
+                            })
+                        }, 10)
                     }
                 }
             })
@@ -285,32 +301,36 @@ exports.ConsentFriend = (req, res) => {
     consentfriend(nweusername, username)
 
     function consentfriend(username, nweusername) {
+        // console.log(username);
         friendslist({
             username
         }, (data) => {
-            let prestorageLsit = data[0].prestorage.find(item => item.FriendsList.find(items => items.username === nweusername))
+            let datas= JSON.parse(JSON.stringify(data[0]))
+            let prestorageLsit = datas.prestorage.find(item => item.FriendsList.find(items => items.username === nweusername))
             let FriendsList = prestorageLsit.FriendsList.find(item => item.username === nweusername)
-            if (FriendsList.stateValue === 3) {
-                if (username !== req.body.username) {
-                    res.json({
-                        code: 4004,
-                        message: '好友已经添加'
-                    })
-                }
-                return
-            }
+           
+            // if (FriendsList.stateValue === 3) {
+            //     if (username !== req.body.username) {
+            //         // res.json({
+            //         //     code: 4004,
+            //         //     message: '好友已经添加'
+            //         // })
+            //     }
+            //     return
+            // }
 
             FriendsList['stateValue'] = 3
             FriendsList['dateTime'] = new Date()
-            prestorageLsit['FriendsList'] = [FriendsList]
-            let aa = data[0].data.find(item => item.title == prestorageLsit.title)
+           
+            let aa = datas.data.find(item => item.title == prestorageLsit.title)
+           
             if (!aa) {
-                data[0].data = [...data[0].data, prestorageLsit]
+                datas.data = [...datas.data, prestorageLsit]
                 UpdateFriend({
                     username,
                 }, {
-                    data: data[0].data,
-                    prestorage: data[0].prestorage
+                    data:datas.data,
+                    prestorage: datas.prestorage
                 }, (datat) => {
                     if (username !== req.body.username) {
                         res.json({
@@ -321,13 +341,24 @@ exports.ConsentFriend = (req, res) => {
                 })
                 return
             } else {
-                aa.FriendsList = [...aa.FriendsList, FriendsList]
+                datas.data = datas.data.map(item=>{
+                    if(item.title==prestorageLsit.title){
+                       return item = {
+                        title:item.title,
+                        FriendsList:[...item.FriendsList, FriendsList]
+                       }
+                    }
+                    return item
+                })
+                // console.log('ss');
+                // console.log( datas);
                 UpdateFriend({
                     username,
                 }, {
-                    data: data[0].data,
-                    prestorage: data[0].prestorage
+                    data:datas.data,
+                    prestorage: datas.prestorage
                 }, (datat) => {
+                    // console.log(datat);
                     if (username !== req.body.username) {
                         res.json({
                             code: 20000,

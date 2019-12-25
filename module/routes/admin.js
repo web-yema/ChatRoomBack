@@ -2,8 +2,8 @@
 // const admin = require("../db/admin");
 // // jwt 加密文件
 let jwt = require("jsonwebtoken");
-// // let formidable = require("formidable");
-// // const path = require("path");
+let formidable = require("formidable");
+const path = require("path");
 let {
     Registers,
     Logins,
@@ -203,3 +203,8 @@ exports.LookForsb = (req, res) => {
 //         data: "success"
 //     });
 // }
+
+// 修改头像
+exports.Headportrait=(req,res)=>{
+    console.log(req.body);
+}
