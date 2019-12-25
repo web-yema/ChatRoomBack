@@ -9,11 +9,13 @@ let {
     Logins,
     getLookforsb
 } = require('../db/admin')
-
+let {
+    AddFriend,
+} = require('../db/friends-list')
 // 注册
 exports.Register = (req, res) => {
-
     let {
+        user,
         username,
         password,
     } = req.body
@@ -54,11 +56,39 @@ exports.Register = (req, res) => {
         sex: '保密',
         age: 0,
         autograph: user + '欢迎您的加入',
-        date: new Date()
+        date: new Date().getTime()
     }
     Registers(rilist, (data) => {
-        res.json(data)
+        if(data){
+            let AddFriendObj = {
+                username,
+                data: [
+                    {
+                        title: '我的好友',
+                        FriendsList: []
+                    },
+                    {
+                        title: '同学',
+                        FriendsList: []
+                    },
+                    {
+                        title: '朋友',
+                        FriendsList: []
+                    }
+                ],
+                prestorage: [
+                ]
+            }
+            AddFriend(AddFriendObj, (datas) => {
+                res.json({
+                    code: 20000,
+                    data: "success",
+                    message: "注册成功"
+                })
+            })
+        }
     })
+    
 }
 
 // 登录
@@ -143,8 +173,9 @@ exports.GetInfo = (req, res) => {
 
 // 查找好友
 exports.LookForsb = (req, res) => {
+    // console.log(req.body);
     getLookforsb(req.body, (data) => {
-        if (!data.length === 0) {
+        if (data.length === 0) {
             return res.json({
                 code: 444,
                 message: '你查找的好友不存在'
@@ -154,7 +185,7 @@ exports.LookForsb = (req, res) => {
         let obj = JSON.parse(JSON.stringify(data[0]))
         // 删除对象里面的
         delete obj.password
-        res.send({
+        res.json({
             code: 200,
             data: obj
         })

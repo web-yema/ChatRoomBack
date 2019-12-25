@@ -3,6 +3,8 @@
 const express = require("express");
 const path = require("path");
 const router = require("./module/router");
+// const routers = require("./module/routers");
+
 const bodyParser = require("body-parser");
 const cors = require("cors");
 let app = express();
@@ -23,6 +25,9 @@ app.use(
 app.use(express.static(path.resolve("./public")));
 // 将路由引入
 app.use(router);
+// user
+// app.use('/user',routers);
+
 let objRoomNumber = {}
 let arrText = {}
 var http = require('http').Server(app);
@@ -48,13 +53,15 @@ io.on('connection', function (socket) {
       title: msg.text
     });
   });
-  // 
+  // 同意后请求数据
   socket.on('Agree', function (msg) {
-    console.log(msg);
+    // console.log(msg);
     io.emit(`${msg.username}Agree`, msg);
+    io.emit(`${msg.userId}Agree`, msg);
   });
   // 私聊
   socket.on('sendMsg', function (msg) {
+    // console.log(msg);
     if (!arrText[msg.roomNumber]) {
       arrText[msg.roomNumber] = []
     }

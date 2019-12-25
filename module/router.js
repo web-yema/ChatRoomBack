@@ -2,6 +2,8 @@
 const express = require("express");
 const admin = require("./routes/admin");
 const home = require("./routes/home");
+const friend = require("./routes/friend");
+
 
 
 let router = express.Router();
@@ -25,5 +27,15 @@ router
   .post("/agree", home.Agree)
   // 创建群
   .post('/creategroup', home.createGroup)
+  // 添加好友
+  .post('/addfriend', friend.AddFriend)
+  // 获取好友分类
+  .post('/friendslist', friend.friendslist)
+  // 删除好友
+  .post('/deletefriend', friend.DeleteFriend)
+  // 同意好友
+  .post('/consentfriend', friend.ConsentFriend)
+  // 添加好友查询
+  .post('/newfriendlist',friend.newFriendlist)
 
 module.exports = router
