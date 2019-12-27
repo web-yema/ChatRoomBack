@@ -1,5 +1,4 @@
 let mongoose = require('mongoose')
-var MongoClient = require('mongodb').MongoClient;
 let {
     Admin: {
         db_url
@@ -12,43 +11,33 @@ mongoose.connect(db_url, {
 })
 
 let groupSchema = new mongoose.Schema({
-    user: String,
+    roomNumber: String,
     username: String,
-    portrait: String,
+    user: String,
+    groupMembers: Array,
     autograph: String,
+    portrait: String,
     date: Date,
 }, {
     collection: 'groupUser'
 })
+// groupUser
 
 let Group = mongoose.model('groupUser', groupSchema)
 
 
 //  创建群
-exports.setGroup = (data, callback) => {
-    Group.create(data).then(times => {
-        callback({
-            code: 20000,
-            data: "success",
-            message: "建群成功"
-        })
-        MongoClient.connect(db_url, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        }, function (err, db) {
-            if (err) throw err;
-            var dbase = db.db("chatRoom");
-            dbase.createCollection(data.username, function (err, res) {
-                if (err) throw err;
-                db.close();
-            });
-        });
-    })
+exports.setGroup = (data) => {
+    return Group.create(data)
 }
 
-// 查找好友
-exports.getGrouporsb = (data, callback) => {
-    Group.find(data).then(item => {
-        callback(item)
+// // 查找群
+exports.getGrouporsb = (data) => {
+    return Group.find(data)
+}
+// 修改
+exports.UpdateGroupor = (roomNumber,data) => {
+    return Group.updateOne(roomNumber,{
+        $set: data
     })
 }

@@ -47,29 +47,25 @@ exports.Registers = (data, callback) => {
     Admin.create(data).then(times => {
       callback(times)
     })
-    // MongoClient.connect(db_url, {
-    //   useNewUrlParser: true,
-    //   useUnifiedTopology: true
-    // }, function (err, db) {
-    //   if (err) throw err;
-    //   var dbase = db.db("chatRoom");
-    //   dbase.createCollection(data.username, function (err, res) {
-    //     if (err) throw err;
-    //     db.close();
-    //   });
-    // });
   })
 }
 
 // 查找好友
 exports.getLookforsb = (data, callback) => {
-  Admin.find(data).sort({
-    _id: 1
-  }).then(item => {
+  Admin.find(data).then(item => {
     callback(item)
   })
 }
 //  查找好友列表
 exports.getFindes = (data) => {
   return Admin.find(data)
+}
+
+//  修改头像
+exports.HeadPortrait = (username, data) => {
+  return Admin.updateOne({
+    username
+  }, {
+    $set: data
+  })
 }

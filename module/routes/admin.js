@@ -4,14 +4,29 @@
 let jwt = require("jsonwebtoken");
 let formidable = require("formidable");
 const path = require("path");
+const fs = require('fs')
+let {
+    imgUrl
+} = require('../db/mongo')
 let {
     Registers,
     Logins,
-    getLookforsb
+    getLookforsb,
+    HeadPortrait
 } = require('../db/admin')
 let {
     AddFriend,
 } = require('../db/friends-list')
+let {
+    AddFriendMessages
+} = require('../db/friend-message')
+
+let {
+    setMessageTables
+} = require('../db/message-table')
+let {
+    setGroupUser
+} = require('../db/group-list')
 // 注册
 exports.Register = (req, res) => {
     let {
@@ -59,11 +74,10 @@ exports.Register = (req, res) => {
         date: new Date().getTime()
     }
     Registers(rilist, (data) => {
-        if(data){
+        if (data) {
             let AddFriendObj = {
                 username,
-                data: [
-                    {
+                data: [{
                         title: '我的好友',
                         FriendsList: []
                     },
@@ -76,19 +90,40 @@ exports.Register = (req, res) => {
                         FriendsList: []
                     }
                 ],
-                prestorage: [
-                ]
+                prestorage: []
             }
+            // 创建好友列表
             AddFriend(AddFriendObj, (datas) => {
-                res.json({
-                    code: 20000,
-                    data: "success",
-                    message: "注册成功"
+                let setGroupUserList = {
+                    username,
+                    myGroupList: [],
+                    addGroupList: [],
+                    myManagedList: [],
+                }
+                // 创建群列表
+                setGroupUser(setGroupUserList, (aaa) => {
+                    let AddFriendMessagesList = {
+                        username,
+                        messageList: [],
+                    }
+                    // 创建添加好友信息表
+                    AddFriendMessages(AddFriendMessagesList, (saa) => {
+                        setMessageTables(AddFriendMessagesList, () => {
+                            res.json({
+                                code: 20000,
+                                data: "success",
+                                message: "注册成功"
+                            })
+                        })
+
+                    })
+
                 })
             })
+
         }
     })
-    
+
 }
 
 // 登录
@@ -173,7 +208,6 @@ exports.GetInfo = (req, res) => {
 
 // 查找好友
 exports.LookForsb = (req, res) => {
-    // console.log(req.body);
     getLookforsb(req.body, (data) => {
         if (data.length === 0) {
             return res.json({
@@ -193,18 +227,86 @@ exports.LookForsb = (req, res) => {
 
 }
 
-// // 
-
-
-// // 退出登录
-// exports.Logout = (req, res) => {
-//     res.json({
-//         code: 20000,
-//         data: "success"
-//     });
-// }
 
 // 修改头像
-exports.Headportrait=(req,res)=>{
-    console.log(req.body);
+let flieusername = ''
+exports.Headportrait = (req, res) => {
+    let {
+        username
+    } = req.body
+    if (username) {
+        fs.stat(`./public/img/${username}/`, function (err, stat) {
+            if (err) {
+                fs.mkdir(`./public/img/${username}`, function (err) {
+                    if (err) {
+                        console.log(err);
+                        return
+                    }
+                })
+            }
+        })
+        flieusername = username
+    } else {
+        let form = new formidable.IncomingForm()
+        console.log(flieusername);
+        form.uploadDir = path.resolve(`./public/img/${flieusername}`)
+        form.keepExtensions = true;
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+                return res.json({
+                    code: 404
+                });
+            }
+            // 解析图片
+            let img = `http://192.168.32.26:3000/img/${flieusername}/` + path.parse(files.file.path).base;
+            HeadPortrait(flieusername, {
+                portrait: img
+            }).then(datas => {
+                if (datas.n == 1 && datas.ok == 1) {
+                    res.json({
+                        code: 2000,
+                        imgUrl: img
+                    })
+                } else {
+                    res.json({
+                        code: 404,
+                    })
+                }
+            })
+        })
+    }
+}
+// 修改密码
+exports.upaDataPassword = (req, res) => {
+    let {
+        username,
+        password,
+        newpassword
+    } = req.body
+    getLookforsb({
+        username
+    }, (data) => {
+        if (data.password !== password) {
+            return res.json({
+                code: 4004,
+                message: '请输入正确的密码'
+            })
+        }
+        // 修改
+        HeadPortrait(username, {
+            password: newpassword
+        }).then(datas => {
+            if (datas.n == 1 && datas.ok == 1) {
+                res.json({
+                    code: 20000,
+                    message: '修改成功'
+                })
+            } else {
+                res.json({
+                    code: 404,
+                    message: '修改失败'
+                })
+            }
+        })
+    })
 }

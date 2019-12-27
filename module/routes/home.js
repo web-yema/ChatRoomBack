@@ -45,55 +45,68 @@ exports.addFriends = (req, res) => {
 }
 // 创建群
 exports.createGroup = (req, res) => {
+    // groupAccount:String,
+    // username: String,
+    // user: String,
+    // portrait: String,
+    // autograph: String,
+    // groupMembers:Array,
     let {
         username,
         groupMembers,
         user,
-        portrait
     } = req.body
     let userId = username.slice(0, 3) + new Date().getTime()
+    let idxa = Math.floor(Math.random() * 7);
+    let img = [
+        'http://img4.imgtn.bdimg.com/it/u=3763361734,3803669044&fm=26&gp=0.jpg',
+        'http://img2.imgtn.bdimg.com/it/u=184803235,1555534009&fm=11&gp=0.jpg',
+        'http://img3.imgtn.bdimg.com/it/u=2399491043,784806262&fm=26&gp=0.jpg',
+        'http://img1.imgtn.bdimg.com/it/u=3311096003,2459030550&fm=26&gp=0.jpg',
+        'http://img4.imgtn.bdimg.com/it/u=3032770652,458815004&fm=26&gp=0.jpg',
+        'http://img4.imgtn.bdimg.com/it/u=1825300561,2663961625&fm=26&gp=0.jpg',
+        'http://img3.imgtn.bdimg.com/it/u=1363526049,1483812480&fm=11&gp=0.jpg'
+    ]
     setGroup({
+        groupAccount: userId,
+        username,
         user,
-        username: userId,
-        portrait: portrait,
+        groupMembers,
+        portrait: img[idxa],
         autograph: `${user}欢迎建群`,
         date: new Date().getTime(),
     }, (data) => {
         if (data.code === 20000) {
             // 我添加好友的
-            groupMembers.map((item,index) => {
+            groupMembers.map((item, index) => {
                 // console.log(item);
                 AddFriends(userId, {
                     newFriendUsername: item,
                     stateValue: 3,
                     roomNumber: userId,
                     groupChat: 2,
-                }, (datas) => { 
-                })
+                }, (datas) => {})
                 AddFriends(item, {
-                        newFriendUsername: userId,
-                        stateValue: 3,
-                        roomNumber: userId,
-                        groupChat: 2,
-                    }, (items) => {
-                        if(groupMembers.length-1===index){
-                            res.json({
-                                code: 20000,
-                                message: '创建成功'
-                            })
-                        }
-                    })
+                    newFriendUsername: userId,
+                    stateValue: 3,
+                    roomNumber: userId,
+                    groupChat: 2,
+                }, (items) => {
+                    if (groupMembers.length - 1 === index) {
+                        res.json({
+                            code: 20000,
+                            message: '创建成功'
+                        })
+                    }
+                })
             })
         }
     })
-
-
-    //    console.log(aa);
 }
 
 // 好友查询
 exports.addFriendStates = (req, res) => {
-   
+
     let {
         username,
         stateValue,
@@ -122,8 +135,8 @@ exports.addFriendStates = (req, res) => {
             let chaList = []
             let ids = datas.data.length
             datas.data.map((item, index) => {
-               
-                if (stateValue&& item.groupChat === 2) {
+
+                if (stateValue && item.groupChat === 2) {
                     getGrouporsb({
                         username: item.newFriendUsername
                     }, (data) => {
@@ -141,7 +154,7 @@ exports.addFriendStates = (req, res) => {
                             })
                         }
                     })
-                } else if(stateValue) {
+                } else if (stateValue) {
                     getLookforsb({
                         username: item.newFriendUsername
                     }, (data) => {
@@ -161,15 +174,19 @@ exports.addFriendStates = (req, res) => {
                             })
                         }
                     })
-                }else{
+                } else {
                     // console.log(item);
-                    if(item.groupChat==2){
+                    if (item.groupChat == 2) {
                         ids--
                         getGrouporsb({
                             username: item.newFriendUsername
                         }, (data) => {
                             let obj = JSON.parse(JSON.stringify(data[0]))
-                            AddFriendState(obj.username, {stateValue:{$ne:3}}, (datas) => {
+                            AddFriendState(obj.username, {
+                                stateValue: {
+                                    $ne: 3
+                                }
+                            }, (datas) => {
                                 // console.log(datas);
                             })
                             // chaList.push(obj)
@@ -180,7 +197,7 @@ exports.addFriendStates = (req, res) => {
                             //     })
                             // }
                         })
-                    }else{
+                    } else {
                         getLookforsb({
                             username: item.newFriendUsername
                         }, (data) => {

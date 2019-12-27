@@ -39,3 +39,15 @@ exports.friendslist = (data, callback) => {
         callback(item)
     })
 }
+
+// 获取好友列表
+exports.friendsListS = (data) => {
+    return friendSchema.findOne(data)
+}
+
+// 修改好友列表
+exports.FriendUpdate = (condition, data) => {
+    return friendSchema.updateOne(condition, {
+        $set: data
+    })
+}

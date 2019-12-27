@@ -4,6 +4,4 @@ exports.Admin = {
     db_url: 'mongodb://chatRoom:123456@47.94.12.180:27017/chatRoom'
 }
 
-// exports.Information = {
-//     url: 'mongodb://InformationBase:123456@47.94.12.180:27017/InformationBase'
-// }
+exports.imgUrl = 'http://47.94.12.180:3000'
