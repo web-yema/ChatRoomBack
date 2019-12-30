@@ -7,6 +7,7 @@ let {
     getLookforsb,
     getFindes
 } = require('../db/admin')
+let {getFindesMessages,upDateMessages} = require('../db/friend-message')
 
 
 
@@ -75,38 +76,47 @@ exports.friendslist = (req, res) => {
 exports.DeleteFriend = (req, res) => {
     let {
         username,
-        title,
-        FriendsData
+        newusername
     } = req.body
-    friendslist({
-        username
-    }, (data) => {
-        let friendsfind = data[0].data.find(item => item.title === title)
-        let aa = friendsfind.FriendsList.filter(item => item.username === FriendsData.username)
-        if (aa.length !== 0) {
-            friendsfind.FriendsList = friendsfind.FriendsList.filter(item => item.username !== FriendsData.username)
-            UpdateFriend({
-                username,
-            }, data[0].data, (datat) => {
-                if (datat.n === 1 && datat.ok === 1) {
-                    res.json({
-                        code: 20000,
-                        message: '删除成功'
+    deleteFriends(username, newusername)
+    deleteFriends(newusername, username)
+
+    async function deleteFriends  (username, newusername) {
+        let findesMessages =  await getFindesMessages({username})
+        findesMessages.massageList= findesMessages.massageList.filter(item=>item.username!=newusername)
+        let upDate=await upDateMessages(username,{massageList:findesMessages.massageList})
+        // console.log(upDate);
+        friendslist({
+            username
+        }, (data) => {
+
+            data[0].data = data[0].data.map(item => {
+                    item.FriendsList = item.FriendsList.filter(items=>items.username!==newusername)
+                    return item
+                } )
+                
+                    UpdateFriend({
+                        username,
+                    },{data:data[0].data}, (datat) => {
+                        if(username!= req.body.username){
+                            if (datat.n === 1 && datat.ok === 1&&upDate.n===1&&upDate.ok===1) {
+                                res.json({
+                                    code: 20000,
+                                    message: '删除成功'
+                                })
+                            } else {
+                                res.json({
+                                    code: 4004,
+                                    message: '删除失败'
+                                })
+                            }
+                        }
+                       
                     })
-                } else {
-                    res.json({
-                        code: 4004,
-                        message: '删除失败'
-                    })
-                }
-            })
-        } else {
-            res.json({
-                code: 4004,
-                message: '删除失败'
-            })
-        }
-    })
+
+        })
+    }
+
 }
 
 
@@ -126,16 +136,6 @@ exports.ConsentFriend = (req, res) => {
             let datas = JSON.parse(JSON.stringify(data[0]))
             let prestorageLsit = datas.prestorage.find(item => item.FriendsList.find(items => items.username === nweusername))
             let FriendsList = prestorageLsit.FriendsList.find(item => item.username === nweusername)
-
-            // if (FriendsList.stateValue === 3) {
-            //     if (username !== req.body.username) {
-            //         // res.json({
-            //         //     code: 4004,
-            //         //     message: '好友已经添加'
-            //         // })
-            //     }
-            //     return
-            // }
 
             FriendsList['stateValue'] = 3
             FriendsList['dateTime'] = new Date()
@@ -168,15 +168,12 @@ exports.ConsentFriend = (req, res) => {
                     }
                     return item
                 })
-                // console.log('ss');
-                // console.log( datas);
                 UpdateFriend({
                     username,
                 }, {
                     data: datas.data,
                     prestorage: datas.prestorage
                 }, (datat) => {
-                    // console.log(datat);
                     if (username !== req.body.username) {
                         res.json({
                             code: 20000,

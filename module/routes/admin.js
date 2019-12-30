@@ -229,52 +229,35 @@ exports.LookForsb = (req, res) => {
 
 
 // 修改头像
-let flieusername = ''
 exports.Headportrait = (req, res) => {
-    let {
-        username
-    } = req.body
-    if (username) {
-        fs.stat(`./public/img/${username}/`, function (err, stat) {
-            if (err) {
-                fs.mkdir(`./public/img/${username}`, function (err) {
-                    if (err) {
-                        console.log(err);
-                        return
-                    }
+
+    let form = new formidable.IncomingForm()
+    form.uploadDir = path.resolve(`./public/img/header`)
+    form.keepExtensions = true;
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+            return res.json({
+                code: 404
+            });
+        }
+        // 解析图片
+        let url = `img/header/` + path.parse(files.file.path).base;
+        let img = imgUrl + url
+        HeadPortrait(fields.filenames, {
+            portrait: img
+        }).then(datas => {
+            if (datas.n == 1 && datas.ok == 1) {
+                res.json({
+                    code: 2000,
+                    imgUrl: img
+                })
+            } else {
+                res.json({
+                    code: 404,
                 })
             }
         })
-        flieusername = username
-    } else {
-        let form = new formidable.IncomingForm()
-        console.log(flieusername);
-        form.uploadDir = path.resolve(`./public/img/${flieusername}`)
-        form.keepExtensions = true;
-        form.parse(req, (err, fields, files) => {
-            if (err) {
-                return res.json({
-                    code: 404
-                });
-            }
-            // 解析图片
-            let img = `http://192.168.32.26:3000/img/${flieusername}/` + path.parse(files.file.path).base;
-            HeadPortrait(flieusername, {
-                portrait: img
-            }).then(datas => {
-                if (datas.n == 1 && datas.ok == 1) {
-                    res.json({
-                        code: 2000,
-                        imgUrl: img
-                    })
-                } else {
-                    res.json({
-                        code: 404,
-                    })
-                }
-            })
-        })
-    }
+    })
 }
 // 修改密码
 exports.upaDataPassword = (req, res) => {
@@ -286,7 +269,7 @@ exports.upaDataPassword = (req, res) => {
     getLookforsb({
         username
     }, (data) => {
-        if (data.password !== password) {
+        if (data[0].password !== password) {
             return res.json({
                 code: 4004,
                 message: '请输入正确的密码'
