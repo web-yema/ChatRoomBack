@@ -126,8 +126,6 @@ exports.addFriendStates = (req, res) => {
     } else {
         aaa = {}
     }
-    // console.log(username);
-    // console.log(username, aaa);
     AddFriendState(username, aaa, (datas) => {
         if (datas.code === 20000) {
             let arrs = []
@@ -135,7 +133,6 @@ exports.addFriendStates = (req, res) => {
             let chaList = []
             let ids = datas.data.length
             datas.data.map((item, index) => {
-
                 if (stateValue && item.groupChat === 2) {
                     getGrouporsb({
                         username: item.newFriendUsername
@@ -175,7 +172,6 @@ exports.addFriendStates = (req, res) => {
                         }
                     })
                 } else {
-                    // console.log(item);
                     if (item.groupChat == 2) {
                         ids--
                         getGrouporsb({

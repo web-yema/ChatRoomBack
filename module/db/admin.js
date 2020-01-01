@@ -45,7 +45,9 @@ exports.Registers = (data, callback) => {
       })
     }
     Admin.create(data).then(times => {
-      callback(times)
+      return callback({
+        code: 20000,
+      })
     })
   })
 }

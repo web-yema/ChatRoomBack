@@ -74,7 +74,7 @@ exports.Register = (req, res) => {
         date: new Date().getTime()
     }
     Registers(rilist, (data) => {
-        if (data) {
+        if (data.code===20000) {
             let AddFriendObj = {
                 username,
                 data: [{
@@ -120,7 +120,8 @@ exports.Register = (req, res) => {
 
                 })
             })
-
+        }else{
+            res.json(data)
         }
     })
 
@@ -230,7 +231,6 @@ exports.LookForsb = (req, res) => {
 
 // 修改头像
 exports.Headportrait = (req, res) => {
-
     let form = new formidable.IncomingForm()
     form.uploadDir = path.resolve(`./public/img/header`)
     form.keepExtensions = true;
@@ -243,6 +243,7 @@ exports.Headportrait = (req, res) => {
         // 解析图片
         let url = `img/header/` + path.parse(files.file.path).base;
         let img = imgUrl + url
+       
         HeadPortrait(fields.filenames, {
             portrait: img
         }).then(datas => {

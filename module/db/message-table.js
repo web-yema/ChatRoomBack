@@ -29,8 +29,13 @@ exports.setMessageTables = (data, callback) => {
     })
 }
 // 给消息列表添加数据
-// exports.setMessageTables = (data, callback) => {
-//     messageTables.create(data).then(times => {
-//         callback(times)
-//     })
-// }
+exports.getMessageTables = (data) => {
+    return messageTables.findOne(data)
+}
+
+// 更新消息列表添加数据
+exports.updateMessageTable = (username,data) => {
+    return messageTables.updateOne(username,{
+        $set:data
+    })
+}

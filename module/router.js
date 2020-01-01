@@ -5,10 +5,7 @@ const home = require("./routes/home");
 const friend = require("./routes/friend");
 const messagesfriend = require("./routes/messagesfriend");
 const groupUser = require("./routes/group-user");
-
-
-
-
+const messageTable = require("./routes/message-table");
 
 let router = express.Router();
 // 路由
@@ -34,6 +31,10 @@ router
   .post("/addfriendstates", home.addFriendStates)
   .post("/agree", home.Agree)
   // 
+  // 添加消息列表
+  .post('/setmessagelist', messageTable.setmessagelist)
+  // 获取消息列表
+  .post('/getmessagelist',messageTable.getmessagelist)
   // 创建群 2
   .post('/creategroup', groupUser.createGroup)
   // 获取群列表
